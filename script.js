@@ -12,6 +12,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const REFERRALS_PER_MEETING = 1.5; // 每次一对一産生引薦單數
     const WEEKS_PER_YEAR = 50; // 每年的工作周數
     
+    // 添加下載按鈕
+    const downloadContainer = document.createElement('div');
+    downloadContainer.className = 'download-buttons';
+    downloadContainer.innerHTML = `
+        <button id="downloadImageBtn" class="download-btn image-btn">下載結果圖片</button>
+        <button id="downloadPdfBtn" class="download-btn pdf-btn">下載結果PDF</button>
+    `;
+    resultsContainer.insertBefore(downloadContainer, printBtn);
+    
+    const downloadImageBtn = document.getElementById('downloadImageBtn');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    
     // 姓名輸入事件 - 自動填充專業別
     nameInput.addEventListener('blur', function() {
         const name = nameInput.value.trim();
@@ -173,4 +185,95 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsContainer.classList.add('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+    
+    // 下載圖片功能
+    async function downloadAsImage() {
+        try {
+            // 創建一個新的結果容器用於截圖
+            const tempContainer = resultsContainer.cloneNode(true);
+            tempContainer.style.padding = '20px';
+            tempContainer.style.background = 'white';
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.width = '100%';
+            tempContainer.style.maxWidth = '800px';
+            
+            // 移除按鈕
+            const buttons = tempContainer.querySelectorAll('button');
+            buttons.forEach(button => button.remove());
+            
+            document.body.appendChild(tempContainer);
+            
+            // 使用 html2canvas 生成圖片
+            const canvas = await html2canvas(tempContainer, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+            
+            // 移除臨時容器
+            document.body.removeChild(tempContainer);
+            
+            // 生成圖片並下載
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            const fileName = `商務結果_${nameInput.value}_${new Date().toLocaleDateString()}.png`;
+            link.download = fileName;
+            link.href = image;
+            link.click();
+        } catch (error) {
+            console.error('生成圖片時出錯:', error);
+            alert('生成圖片時出錯，請稍後再試');
+        }
+    }
+    
+    // 下載PDF功能
+    async function downloadAsPdf() {
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+            
+            // 創建臨時容器
+            const tempContainer = resultsContainer.cloneNode(true);
+            tempContainer.style.padding = '20px';
+            tempContainer.style.width = '800px';
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            
+            // 移除按鈕
+            const buttons = tempContainer.querySelectorAll('button');
+            buttons.forEach(button => button.remove());
+            
+            document.body.appendChild(tempContainer);
+            
+            // 轉換為圖片
+            const canvas = await html2canvas(tempContainer, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+            
+            // 移除臨時容器
+            document.body.removeChild(tempContainer);
+            
+            // 將圖片添加到PDF
+            const imgData = canvas.toDataURL('image/png');
+            const imgProps = doc.getImageProperties(imgData);
+            const pdfWidth = doc.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            
+            doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            
+            // 下載PDF
+            const fileName = `商務結果_${nameInput.value}_${new Date().toLocaleDateString()}.pdf`;
+            doc.save(fileName);
+        } catch (error) {
+            console.error('生成PDF時出錯:', error);
+            alert('生成PDF時出錯，請稍後再試');
+        }
+    }
+    
+    // 添加下載按鈕事件監聽器
+    downloadImageBtn.addEventListener('click', downloadAsImage);
+    downloadPdfBtn.addEventListener('click', downloadAsPdf);
 }); 
