@@ -214,13 +214,77 @@ document.addEventListener('DOMContentLoaded', function() {
             // 移除臨時容器
             document.body.removeChild(tempContainer);
             
-            // 生成圖片並下載
+            // 生成圖片
             const image = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            const fileName = `商務結果_${nameInput.value}_${new Date().toLocaleDateString()}.png`;
-            link.download = fileName;
-            link.href = image;
-            link.click();
+            
+            // 檢測是否為 iOS 設備
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            
+            if (isIOS) {
+                // 在 iOS 上，創建一個新頁面並顯示圖片
+                // 用戶可以長按圖片並選擇"儲存圖片"
+                const newTab = window.open();
+                if (newTab) {
+                    const fileName = `商務結果_${nameInput.value}_${new Date().toLocaleDateString()}.png`;
+                    newTab.document.write(`
+                        <html>
+                            <head>
+                                <title>${fileName}</title>
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <style>
+                                    body {
+                                        margin: 0;
+                                        padding: 20px;
+                                        text-align: center;
+                                        font-family: Arial, sans-serif;
+                                        background-color: #f8f9fa;
+                                    }
+                                    h2 {
+                                        margin-bottom: 20px;
+                                        color: #1a73e8;
+                                    }
+                                    img {
+                                        max-width: 100%;
+                                        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                                        border-radius: 8px;
+                                    }
+                                    .instructions {
+                                        margin-top: 20px;
+                                        padding: 15px;
+                                        background-color: #e8f0fe;
+                                        border-radius: 8px;
+                                        text-align: left;
+                                        font-size: 14px;
+                                        color: #444;
+                                        line-height: 1.6;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <h2>您的商務結果圖片</h2>
+                                <img src="${image}" alt="商務結果">
+                                <div class="instructions">
+                                    <strong>如何儲存到照片：</strong>
+                                    <ol>
+                                        <li>長按上方圖片</li>
+                                        <li>在彈出選單中點選「儲存圖片」</li>
+                                        <li>圖片將被儲存到您的照片應用程式中</li>
+                                    </ol>
+                                </div>
+                            </body>
+                        </html>
+                    `);
+                } else {
+                    alert('無法開啟新視窗。請檢查您的瀏覽器設定，或嘗試使用其他瀏覽器。');
+                }
+            } else {
+                // 在非 iOS 設備上繼續使用原來的下載方式
+                const link = document.createElement('a');
+                const fileName = `商務結果_${nameInput.value}_${new Date().toLocaleDateString()}.png`;
+                link.download = fileName;
+                link.href = image;
+                link.click();
+            }
         } catch (error) {
             console.error('生成圖片時出錯:', error);
             alert('生成圖片時出錯，請稍後再試');
@@ -264,9 +328,78 @@ document.addEventListener('DOMContentLoaded', function() {
             
             doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             
-            // 下載PDF
+            // 檢測是否為 iOS 設備
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const fileName = `商務結果_${nameInput.value}_${new Date().toLocaleDateString()}.pdf`;
-            doc.save(fileName);
+            
+            if (isIOS) {
+                // 在 iOS 上，直接在新頁面中打開 PDF，用戶可以使用分享功能儲存
+                const pdfOutput = doc.output('bloburl');
+                const newTab = window.open();
+                if (newTab) {
+                    newTab.document.write(`
+                        <html>
+                            <head>
+                                <title>${fileName}</title>
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <style>
+                                    body {
+                                        margin: 0;
+                                        padding: 0;
+                                        height: 100vh;
+                                        display: flex;
+                                        flex-direction: column;
+                                        font-family: Arial, sans-serif;
+                                    }
+                                    .header {
+                                        padding: 15px;
+                                        background-color: #f8f9fa;
+                                        text-align: center;
+                                        border-bottom: 1px solid #ddd;
+                                    }
+                                    h2 {
+                                        margin: 0;
+                                        color: #1a73e8;
+                                        font-size: 18px;
+                                    }
+                                    .instructions {
+                                        padding: 10px 15px;
+                                        background-color: #e8f0fe;
+                                        font-size: 14px;
+                                        color: #444;
+                                        line-height: 1.5;
+                                    }
+                                    .pdf-container {
+                                        flex-grow: 1;
+                                        width: 100%;
+                                    }
+                                    iframe {
+                                        width: 100%;
+                                        height: 100%;
+                                        border: none;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="header">
+                                    <h2>您的商務結果 PDF</h2>
+                                </div>
+                                <div class="instructions">
+                                    <strong>如何儲存 PDF：</strong>點擊 Safari 底部的分享按鈕 <span style="font-size:18px;">⬆️</span>，然後選擇「儲存至檔案」或「iBooks」等選項。
+                                </div>
+                                <div class="pdf-container">
+                                    <iframe src="${pdfOutput}"></iframe>
+                                </div>
+                            </body>
+                        </html>
+                    `);
+                } else {
+                    alert('無法開啟新視窗。請檢查您的瀏覽器設定，或嘗試使用其他瀏覽器。');
+                }
+            } else {
+                // 在非 iOS 設備上繼續使用原來的下載方式
+                doc.save(fileName);
+            }
         } catch (error) {
             console.error('生成PDF時出錯:', error);
             alert('生成PDF時出錯，請稍後再試');
