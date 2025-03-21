@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('businessCalculator');
     const resultsContainer = document.getElementById('results');
-    const printBtn = document.getElementById('printBtn');
     const resetBtn = document.getElementById('resetBtn');
     const nameInput = document.getElementById('name');
     const industryInput = document.getElementById('industry');
@@ -19,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <button id="downloadImageBtn" class="download-btn image-btn">下載結果圖片</button>
         <button id="downloadPdfBtn" class="download-btn pdf-btn">下載結果PDF</button>
     `;
-    resultsContainer.insertBefore(downloadContainer, printBtn);
+    resultsContainer.insertBefore(downloadContainer, resetBtn);
     
     const downloadImageBtn = document.getElementById('downloadImageBtn');
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
@@ -172,11 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 滾動到結果區域
         resultsContainer.scrollIntoView({ behavior: 'smooth' });
-    });
-    
-    // 打印結果
-    printBtn.addEventListener('click', function() {
-        window.print();
     });
     
     // 重置計算
