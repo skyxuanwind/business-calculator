@@ -1,8 +1,8 @@
 // 存儲所有會員的姓名和專業別
 const memberDatabase = [
     { name: "楊攸仁", industry: "髮妝造型教育顧問" },
-    { name: "陳玥月", industry: "妊娠矯色撫紋術" },
-    { name: "陳家祥", industry: "美胸按摩美學" },
+    { name: "陳玥月", industry: "疤痕紋路修復專家" },
+    { name: "陳家祥", industry: "成人情趣保健品業" },
     { name: "何玲君", industry: "體態雕塑" },
     { name: "李思賢", industry: "保養品業" },
     { name: "吳岳軒", industry: "影音行銷" },
@@ -46,7 +46,10 @@ const memberDatabase = [
     { name: "劉耀尹", industry: "五金工具業" },
     { name: "倪暉雅", industry: "彩繪藝術文創工程" },
     { name: "陳致佐", industry: "水電工程" },
-    { name: "梁家菖", industry: "商用空調" }
+    { name: "梁家菖", industry: "商用空調" },
+    { name: "林詠儀", industry: "油漆工程" },
+    { name: "杜國勇", industry: "木作裝修" },
+    { name: "陳建男", industry: "溫泉旅宿業" }
 ];
 
 // 根據姓名查找會員專業別
