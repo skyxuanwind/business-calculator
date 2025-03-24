@@ -181,63 +181,82 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 獲取並顯示推薦夥伴
     async function loadPartnerRecommendations(dreamReferral, wishIndustries) {
-        const partnersContainer = document.getElementById('partners-container');
-        
-        // 顯示加載中
-        partnersLoading.classList.remove('hidden');
-        partnersContainer.classList.add('hidden');
-        
         try {
-            // 過濾掉空值的願合作行業
+            // 顯示載入動畫
+            document.getElementById('partners-loading').classList.remove('hidden');
+            document.getElementById('partners-container').classList.add('hidden');
+            
+            // 過濾掉空值
             const filteredWishIndustries = wishIndustries.filter(industry => industry && industry.trim() !== '');
             
-            // 獲取推薦
-            const recommendations = await getPartnerRecommendations(dreamReferral, filteredWishIndustries);
+            // 獲取用戶姓名以排除自己
+            const userName = document.getElementById('result-name').textContent;
             
-            // 確保 recommendations 是一個有效的數組
+            // 獲取推薦
+            const recommendations = await getPartnerRecommendations(dreamReferral, filteredWishIndustries, userName);
+            
+            // 渲染推薦結果
+            const partnersContainer = document.getElementById('partners-container');
+            partnersContainer.innerHTML = '';
+            
+            // 確保推薦是一個陣列
             if (Array.isArray(recommendations) && recommendations.length > 0) {
-                let html = '';
-                
-                recommendations.forEach(recommendation => {
-                    // 確保 recommendation 有必要的屬性
-                    const name = recommendation.name || '未知名稱';
-                    const industry = recommendation.industry || '未知行業';
-                    const reason = recommendation.reason || '無推薦理由';
-                    const potentialClients = recommendation.potentialClients || '尚無資料，建議一對一深入討論';
+                recommendations.forEach(partner => {
+                    // 提供默認值，以防某些屬性缺失
+                    const name = partner.name || '未提供姓名';
+                    const industry = partner.industry || '未提供行業';
+                    const reason = partner.reason || '推薦理由未提供';
+                    const potentialClients = partner.potentialClients || '潛在客戶資訊未提供';
                     
-                    html += `
-                        <div class="partner-card">
-                            <div class="partner-header">
-                                <span class="partner-name">${name}</span>
-                                <span class="partner-industry">${industry}</span>
+                    // 創建夥伴卡片
+                    const partnerCard = document.createElement('div');
+                    partnerCard.className = 'partner-card';
+                    
+                    partnerCard.innerHTML = `
+                        <div class="partner-header">
+                            <h4 class="partner-name">${name}</h4>
+                            <div class="partner-industry">${industry}</div>
+                        </div>
+                        <div class="partner-content">
+                            <div class="partner-section">
+                                <h4>推薦理由</h4>
+                                <p>${reason}</p>
                             </div>
-                            <div class="partner-content">
-                                <div class="partner-section">
-                                    <h4>為什麼安排一對一</h4>
-                                    <p class="partner-reason">${reason}</p>
-                                </div>
-                                <div class="partner-section">
-                                    <h4>可能擁有的客戶名單</h4>
-                                    <p class="partner-clients">${potentialClients}</p>
-                                </div>
+                            <div class="partner-section">
+                                <h4>潛在客戶名單</h4>
+                                <p>${potentialClients}</p>
                             </div>
                         </div>
                     `;
+                    
+                    partnersContainer.appendChild(partnerCard);
                 });
-                
-                partnersContainer.innerHTML = html;
             } else {
-                // 如果沒有有效推薦，使用默認信息
-                partnersContainer.innerHTML = '<p>無法找到適合一對一的夥伴推薦。請嘗試調整您的需求或稍後再試。</p>';
+                // 如果沒有有效的推薦，顯示一個友好的消息
+                partnersContainer.innerHTML = `
+                    <div class="no-partners-message">
+                        <p>根據您的需求，暫時無法找到適合您進行一對一會議的夥伴推薦。請嘗試更新您的合作行業偏好，或聯繫分會管理員獲取更多協助。</p>
+                    </div>
+                `;
             }
             
-            // 隱藏加載動畫，顯示結果
-            partnersLoading.classList.add('hidden');
+            // 隱藏載入動畫，顯示結果
+            document.getElementById('partners-loading').classList.add('hidden');
             partnersContainer.classList.remove('hidden');
+            
         } catch (error) {
             console.error('加載合作夥伴推薦時出錯:', error);
-            partnersLoading.classList.add('hidden');
-            partnersContainer.innerHTML = '<p>無法獲取夥伴推薦。請稍後再試。</p>';
+            
+            // 顯示錯誤消息
+            const partnersContainer = document.getElementById('partners-container');
+            partnersContainer.innerHTML = `
+                <div class="error-message">
+                    <p>獲取合作夥伴推薦時發生錯誤，請稍後再試。</p>
+                </div>
+            `;
+            
+            // 隱藏載入動畫，顯示錯誤消息
+            document.getElementById('partners-loading').classList.add('hidden');
             partnersContainer.classList.remove('hidden');
         }
     }

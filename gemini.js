@@ -6,15 +6,19 @@ const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-
  * 根據用戶的夢幻引薦和願合作行業獲取合作夥伴推薦
  * @param {Object} dreamReferral - 用戶的夢幻引薦信息
  * @param {Array<string>} wishIndustries - 用戶想要合作的行業列表
+ * @param {string} userName - 用戶的姓名，用於排除自己
  * @returns {Promise<Array<Object>>} - 推薦的合作夥伴列表
  */
-async function getPartnerRecommendations(dreamReferral, wishIndustries) {
+async function getPartnerRecommendations(dreamReferral, wishIndustries, userName = '') {
     try {
         // 獲取所有會員數據庫
         const allMembers = getAllMembers();
         
+        // 過濾出不包含用戶自己的會員列表
+        const filteredMembers = allMembers.filter(member => member.name !== userName);
+        
         // 將會員數據庫轉換為字符串，以便納入提示詞
-        const memberData = allMembers.map(member => 
+        const memberData = filteredMembers.map(member => 
             `姓名: ${member.name}, 行業別: ${member.industry}`
         ).join('\n');
         
@@ -133,17 +137,17 @@ async function getPartnerRecommendations(dreamReferral, wishIndustries) {
                 console.error('解析推薦JSON時出錯:', error);
                 console.error('無法解析的文本:', cleanedText);
                 // 如果仍然無法解析，使用備用推薦
-                return generateFallbackRecommendations(dreamReferral, wishIndustries);
+                return generateFallbackRecommendations(dreamReferral, wishIndustries, userName);
             }
         } else {
             console.error('API沒有返回有效推薦');
-            return generateFallbackRecommendations(dreamReferral, wishIndustries);
+            return generateFallbackRecommendations(dreamReferral, wishIndustries, userName);
         }
     } catch (error) {
         console.error('獲取推薦時出錯:', error);
         
         // 如果API請求失敗，使用內置會員數據生成推薦
-        return generateFallbackRecommendations(dreamReferral, wishIndustries);
+        return generateFallbackRecommendations(dreamReferral, wishIndustries, userName);
     }
 }
 
@@ -151,9 +155,10 @@ async function getPartnerRecommendations(dreamReferral, wishIndustries) {
  * 根據現有會員數據生成備用推薦（當API請求失敗時使用）
  * @param {Object} dreamReferral - 用戶的夢幻引薦信息
  * @param {Array<string>} wishIndustries - 用戶想要合作的行業列表
+ * @param {string} userName - 用戶的姓名，用於排除自己
  * @returns {Array<Object>} - 推薦的合作夥伴列表
  */
-function generateFallbackRecommendations(dreamReferral, wishIndustries) {
+function generateFallbackRecommendations(dreamReferral, wishIndustries, userName = '') {
     // 從數據庫獲取所有會員
     const allDatabaseMembers = getAllMembers();
     console.log('從數據庫獲取會員數量:', allDatabaseMembers.length);
@@ -410,7 +415,12 @@ function generateFallbackRecommendations(dreamReferral, wishIndustries) {
             }
         }
         
-        console.log('合併後總會員數量:', allMembers.length);
+        // 排除使用者自己
+        if (userName) {
+            allMembers = allMembers.filter(member => member.name !== userName);
+        }
+        
+        console.log('合併後總會員數量(排除使用者):', allMembers.length);
         
         // 如果沒有足夠的會員數據，返回默認推薦
         if (allMembers.length < 3) {

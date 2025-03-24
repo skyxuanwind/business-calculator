@@ -238,69 +238,86 @@ input[readonly] {
 
 .partner-card {
     background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.partner-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .partner-header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 15px 20px;
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .partner-name {
-    font-weight: 600;
-    color: #1a73e8;
-    font-size: 18px;
-    margin-bottom: 5px;
-    flex: 1 0 100%;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.5px;
+    color: #ffffff;
 }
 
 .partner-industry {
-    color: #666;
-    font-size: 16px;
-    flex: 1 0 100%;
-    text-align: right;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 50px;
+    display: inline-block;
+    font-size: 1rem;
+    margin-top: 5px;
+    font-weight: 500;
+    color: #ffffff;
+    align-self: flex-start;
 }
 
 .partner-content {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    padding: 20px;
 }
 
 .partner-section {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
-    border-left: 3px solid #1a73e8;
+    margin-bottom: 16px;
 }
 
 .partner-section h4 {
-    color: #1a73e8;
+    color: #2c3e50;
     margin-bottom: 8px;
-    font-size: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 5px;
 }
 
 .partner-section p {
     color: #555;
-    font-size: 14px;
-    line-height: 1.6;
-    margin-bottom: 0;
-    text-align: left;
+    line-height: 1.5;
+    margin: 0;
 }
 
-.partner-reason,
-.partner-clients,
-.partner-opportunities {
-    margin: 0;
-    padding: 0;
+.no-partners-message, .error-message {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.no-partners-message p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+.error-message p {
+    color: #dc3545;
+    font-size: 1.1rem;
 }
 
 /* 加載動畫 */
