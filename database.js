@@ -49,7 +49,8 @@ const memberDatabase = [
     { name: "梁家菖", industry: "商用空調" },
     { name: "林詠儀", industry: "油漆工程" },
     { name: "杜國勇", industry: "木作裝修" },
-    { name: "陳建男", industry: "溫泉旅宿業" }
+    { name: "陳建男", industry: "溫泉旅宿業" },
+    { name: "張禎娟", industry: "日本精品雜貨業" }
 ];
 
 // 根據姓名查找會員專業別
