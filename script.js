@@ -194,21 +194,26 @@ document.addEventListener('DOMContentLoaded', function() {
             // 獲取推薦
             const recommendations = await getPartnerRecommendations(dreamReferral, filteredWishIndustries);
             
-            // 顯示推薦
-            if (recommendations && recommendations.length > 0) {
+            // 確保 recommendations 是一個有效的數組
+            if (Array.isArray(recommendations) && recommendations.length > 0) {
                 let html = '';
                 
                 recommendations.forEach(recommendation => {
+                    // 確保 recommendation 有必要的屬性
+                    const name = recommendation.name || '未知名稱';
+                    const industry = recommendation.industry || '未知行業';
+                    const reason = recommendation.reason || '無推薦理由';
+                    
                     html += `
                         <div class="partner-card">
                             <div class="partner-header">
-                                <span class="partner-name">${recommendation.name}</span>
-                                <span class="partner-industry">${recommendation.industry}</span>
+                                <span class="partner-name">${name}</span>
+                                <span class="partner-industry">${industry}</span>
                             </div>
                             <div class="partner-content">
                                 <div class="partner-section">
                                     <h4>推薦原因</h4>
-                                    <p class="partner-reason">${recommendation.reason}</p>
+                                    <p class="partner-reason">${reason}</p>
                                 </div>
                             </div>
                         </div>
@@ -217,7 +222,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 partnersContainer.innerHTML = html;
             } else {
-                partnersContainer.innerHTML = '<p>無法找到匹配的合作夥伴推薦。請嘗試調整您的需求。</p>';
+                // 如果沒有有效推薦，使用默認信息
+                partnersContainer.innerHTML = '<p>無法找到匹配的合作夥伴推薦。請嘗試調整您的需求或稍後再試。</p>';
             }
             
             // 隱藏加載動畫，顯示結果

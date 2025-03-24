@@ -27,17 +27,26 @@ async function getPartnerRecommendations(dreamReferral, wishIndustries) {
         2. 推薦夥伴的行業/專業
         3. 詳細說明為什麼推薦這個夥伴（專業互補性、客戶重疊可能性、合作機會等）
         
-        請用JSON格式回答，格式如下：
+        重要要求：必須僅返回純 JSON 格式，不帶任何 Markdown 標記如 \`\`\`json 或 \`\`\`。不要添加任何註釋或額外文字。
+        
+        JSON格式如下：
         [
           {
             "name": "夥伴名稱",
             "industry": "夥伴行業/專業",
             "reason": "推薦理由"
           },
-          ...
+          {
+            "name": "夥伴名稱2",
+            "industry": "夥伴行業/專業2",
+            "reason": "推薦理由2"
+          },
+          {
+            "name": "夥伴名稱3",
+            "industry": "夥伴行業/專業3",
+            "reason": "推薦理由3"
+          }
         ]
-        
-        只返回JSON格式，不要有任何其他文字。
         `;
         
         // 準備API請求
@@ -79,19 +88,39 @@ async function getPartnerRecommendations(dreamReferral, wishIndustries) {
         // 解析生成的內容
         if (data.candidates && data.candidates.length > 0) {
             const text = data.candidates[0].content.parts[0].text;
+            console.log('API返回原始文本:', text);
+            
+            // 清理返回的文本，去除可能的 Markdown 標記
+            let cleanedText = text.trim();
+            
+            // 移除可能的 Markdown JSON 代碼塊標記
+            cleanedText = cleanedText.replace(/```json\s*/g, '');
+            cleanedText = cleanedText.replace(/```\s*$/g, '');
+            
+            // 尋找 JSON 數組部分（在 [ 和 ] 之間的內容）
+            const jsonRegex = /\[\s*\{[\s\S]*\}\s*\]/g;
+            const jsonMatch = cleanedText.match(jsonRegex);
+            
+            if (jsonMatch) {
+                cleanedText = jsonMatch[0];
+            }
+            
+            console.log('清理後的JSON文本:', cleanedText);
             
             // 嘗試解析JSON
             try {
-                const recommendations = JSON.parse(text.trim());
+                const recommendations = JSON.parse(cleanedText);
+                console.log('成功解析的推薦:', recommendations);
                 return recommendations;
             } catch (error) {
                 console.error('解析推薦JSON時出錯:', error);
-                // 如果無法解析JSON，返回空數組
-                return [];
+                console.error('無法解析的文本:', cleanedText);
+                // 如果仍然無法解析，使用備用推薦
+                return generateFallbackRecommendations(dreamReferral, wishIndustries);
             }
         } else {
             console.error('API沒有返回有效推薦');
-            return [];
+            return generateFallbackRecommendations(dreamReferral, wishIndustries);
         }
     } catch (error) {
         console.error('獲取推薦時出錯:', error);
