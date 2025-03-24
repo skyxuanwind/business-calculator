@@ -40,7 +40,7 @@
  */
 
 // 配置：在這裡設置您的 Google Sheets ID
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+const SPREADSHEET_ID = '1XGHrRjHAmeXCxeosQZ6T6F-SyVsE1qqQVQ4RXNLn8QM';
 
 // 在 Google Sheets 中使用的工作表名稱
 const SHEET_NAME = '會員數據';

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const WEEKS_PER_YEAR = 50; // 每年的工作周數
     
     // 定義後台 API 端點
-    const BACKEND_API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYED_SCRIPT_ID/exec';
+    const BACKEND_API_URL = 'https://script.google.com/macros/s/AKfycbxcpIPNblnxo_YO7mmH4CTG2Rlx39jRu6Ukk1sNgxNPYzwH7QNFfzHKk3LGlM7aIaGb/exec';
     
     // 添加下載按鈕
     const downloadContainer = document.createElement('div');
