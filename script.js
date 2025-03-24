@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const WEEKS_PER_YEAR = 50; // 每年的工作周數
     
     // 定義後台 API 端點
-    const BACKEND_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_DEPLOYED_URL';
+    const BACKEND_API_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYED_SCRIPT_ID/exec';
     
     // 添加下載按鈕
     const downloadContainer = document.createElement('div');
@@ -181,10 +181,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 獲取並顯示推薦夥伴
     async function loadPartnerRecommendations(dreamReferral, wishIndustries) {
-        const recommendationsContainer = document.getElementById('partner-recommendations');
+        const partnersContainer = document.getElementById('partners-container');
         
         // 顯示加載中
-        recommendationsContainer.innerHTML = '<p>正在分析您的需求，尋找合適的合作夥伴...</p>';
+        partnersLoading.classList.remove('hidden');
+        partnersContainer.classList.add('hidden');
         
         try {
             // 過濾掉空值的願合作行業
@@ -195,25 +196,38 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 顯示推薦
             if (recommendations && recommendations.length > 0) {
-                let html = '<h3>為您推薦的合作夥伴：</h3><ul class="recommendations-list">';
+                let html = '';
                 
                 recommendations.forEach(recommendation => {
                     html += `
-                        <li class="recommendation-item">
-                            <h4>${recommendation.name} (${recommendation.industry})</h4>
-                            <p>${recommendation.reason}</p>
-                        </li>
+                        <div class="partner-card">
+                            <div class="partner-header">
+                                <span class="partner-name">${recommendation.name}</span>
+                                <span class="partner-industry">${recommendation.industry}</span>
+                            </div>
+                            <div class="partner-content">
+                                <div class="partner-section">
+                                    <h4>推薦原因</h4>
+                                    <p class="partner-reason">${recommendation.reason}</p>
+                                </div>
+                            </div>
+                        </div>
                     `;
                 });
                 
-                html += '</ul>';
-                recommendationsContainer.innerHTML = html;
+                partnersContainer.innerHTML = html;
             } else {
-                recommendationsContainer.innerHTML = '<p>無法找到匹配的合作夥伴推薦。請嘗試調整您的需求。</p>';
+                partnersContainer.innerHTML = '<p>無法找到匹配的合作夥伴推薦。請嘗試調整您的需求。</p>';
             }
+            
+            // 隱藏加載動畫，顯示結果
+            partnersLoading.classList.add('hidden');
+            partnersContainer.classList.remove('hidden');
         } catch (error) {
             console.error('加載合作夥伴推薦時出錯:', error);
-            recommendationsContainer.innerHTML = '<p>無法獲取合作夥伴推薦。請稍後再試。</p>';
+            partnersLoading.classList.add('hidden');
+            partnersContainer.innerHTML = '<p>無法獲取合作夥伴推薦。請稍後再試。</p>';
+            partnersContainer.classList.remove('hidden');
         }
     }
     
