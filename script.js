@@ -281,14 +281,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const closingRate = parseFloat(document.getElementById('closingRate').value);
         
         // 獲取個人期望與承諾欄位
-        const dreamReferralPeople = document.getElementById('dreamReferralPeople').value.trim();
-        const dreamReferralIndustry = document.getElementById('dreamReferralIndustry').value.trim();
+        const dreamReferralPeopleIndustry = document.getElementById('dreamReferralPeopleIndustry').value.trim();
         const dreamReferralAmount = parseFloat(document.getElementById('dreamReferralAmount').value) || 0;
         
         const wishIndustry1 = document.getElementById('wishIndustry1').value.trim();
         const wishIndustry2 = document.getElementById('wishIndustry2').value.trim();
         const wishIndustry3 = document.getElementById('wishIndustry3').value.trim();
-        const wishIndustry4 = document.getElementById('wishIndustry4').value.trim();
         
         const expectedMembers = parseInt(document.getElementById('expectedMembers').value) || 0;
         const guestInvites = parseInt(document.getElementById('guestInvites').value) || 0;
@@ -326,8 +324,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('result-weeklyMeetings').textContent = `${weeklyMeetings} 次會議`;
         
         // 顯示個人期望與承諾欄位的結果
-        const dreamReferralText = dreamReferralPeople || dreamReferralIndustry || dreamReferralAmount 
-            ? `人脈：${dreamReferralPeople || '未填寫'}，行業別：${dreamReferralIndustry || '未填寫'}，金額：${dreamReferralAmount ? formatCurrency(dreamReferralAmount) : '未填寫'}`
+        const dreamReferralText = dreamReferralPeopleIndustry || dreamReferralAmount 
+            ? `人脈&行業別：${dreamReferralPeopleIndustry || '未填寫'}，金額：${dreamReferralAmount ? formatCurrency(dreamReferralAmount) : '未填寫'}`
             : '未填寫';
         document.getElementById('result-dreamReferral').textContent = dreamReferralText;
         
@@ -335,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const wishIndustriesDiv = document.getElementById('result-wishIndustries');
         wishIndustriesDiv.innerHTML = '';
         
-        const wishIndustries = [wishIndustry1, wishIndustry2, wishIndustry3, wishIndustry4].filter(item => item);
+        const wishIndustries = [wishIndustry1, wishIndustry2, wishIndustry3].filter(item => item);
         
         if (wishIndustries.length > 0) {
             wishIndustries.forEach((industry, index) => {
@@ -365,8 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
             yearlyMeetings: yearlyMeetings,
             weeklyMeetings: weeklyMeetings,
             dreamReferral: {
-                people: dreamReferralPeople,
-                industry: dreamReferralIndustry,
+                peopleIndustry: dreamReferralPeopleIndustry,
                 amount: dreamReferralAmount
             },
             wishIndustries: wishIndustries,
@@ -390,8 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 獲取推薦夥伴
         await loadPartnerRecommendations(
             {
-                people: dreamReferralPeople,
-                industry: dreamReferralIndustry,
+                peopleIndustry: dreamReferralPeopleIndustry,
                 amount: dreamReferralAmount
             }, 
             wishIndustries

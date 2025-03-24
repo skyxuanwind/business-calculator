@@ -27,8 +27,7 @@ async function getPartnerRecommendations(dreamReferral, wishIndustries, userName
         作為一個BNI小組的一對一匹配專家，請根據以下會員信息推薦3個最適合進行一對一會談的夥伴。
         
         會員的夢幻引薦信息：
-        - 夢幻引薦人脈：${dreamReferral.people || '未提供'}
-        - 夢幻引薦行業：${dreamReferral.industry || '未提供'}
+        - 夢幻引薦人脈&行業別：${dreamReferral.peopleIndustry || '未提供'}
         - 夢幻引薦金額：${dreamReferral.amount ? `${dreamReferral.amount}元` : '未提供'}
         
         會員希望合作的行業：
@@ -248,18 +247,38 @@ function generateFallbackRecommendations(dreamReferral, wishIndustries, userName
         "日本精品雜貨業": "日系品牌愛好者、居家雜貨收藏家、送禮需求客戶、設計師、室內設計公司"
     };
     
+    // 從人脈&行業別文本中提取行業信息的輔助函數
+    function extractIndustryFromText(peopleIndustryText) {
+        if (!peopleIndustryText) return '';
+        
+        // 假設行業別可能在人脈&行業別中的後半部分，尋找可能的分隔符
+        const separators = ['&', '，', ',', '、', '和', ' '];
+        for (const sep of separators) {
+            if (peopleIndustryText.includes(sep)) {
+                const parts = peopleIndustryText.split(sep);
+                // 取最後一部分作為可能的行業別
+                return parts[parts.length - 1].trim();
+            }
+        }
+        
+        // 如果沒有找到分隔符，使用整個字串作為參考
+        return peopleIndustryText;
+    }
+
     // 獲取最適合用戶的行業關鍵詞（用於後續匹配）
     function getRelevantKeywords(dreamReferral, wishIndustries) {
         const keywords = new Set();
         
-        // 從夢幻引薦行業獲取關鍵詞
-        if (dreamReferral.industry) {
+        // 從夢幻引薦人脈&行業別中提取可能的行業資訊
+        const dreamReferralIndustry = extractIndustryFromText(dreamReferral.peopleIndustry);
+        
+        if (dreamReferralIndustry) {
             // 直接添加夢幻引薦行業關鍵詞
-            keywords.add(dreamReferral.industry);
+            keywords.add(dreamReferralIndustry);
             
             // 檢查關鍵詞表中是否有匹配項
             for (const [key, values] of Object.entries(industryMatchScores.keywords)) {
-                if (dreamReferral.industry.includes(key) || values.some(v => dreamReferral.industry.includes(v))) {
+                if (dreamReferralIndustry.includes(key) || values.some(v => dreamReferralIndustry.includes(v))) {
                     values.forEach(v => keywords.add(v));
                     keywords.add(key);
                 }
@@ -288,6 +307,9 @@ function generateFallbackRecommendations(dreamReferral, wishIndustries, userName
     function calculateMatchScore(member, dreamReferral, wishIndustries, relevantKeywords) {
         let score = 0;
         
+        // 提取夢幻引薦中的行業信息
+        const dreamReferralIndustry = extractIndustryFromText(dreamReferral.peopleIndustry);
+        
         // 1. 直接匹配願合作行業 (高優先級)
         for (const industry of wishIndustries) {
             if (!industry) continue;
@@ -298,9 +320,9 @@ function generateFallbackRecommendations(dreamReferral, wishIndustries, userName
         }
         
         // 2. 匹配夢幻引薦行業 (中優先級)
-        if (dreamReferral.industry && 
-            (member.industry.includes(dreamReferral.industry) || 
-             dreamReferral.industry.includes(member.industry))) {
+        if (dreamReferralIndustry && 
+            (member.industry.includes(dreamReferralIndustry) || 
+             dreamReferralIndustry.includes(member.industry))) {
             score += 30;
         }
         
@@ -308,8 +330,8 @@ function generateFallbackRecommendations(dreamReferral, wishIndustries, userName
         for (const [industry, complementaryIndustries] of Object.entries(industryMatchScores.pairs)) {
             if (member.industry.includes(industry)) {
                 // 檢查用戶的夢幻引薦或願合作行業是否與此會員行業互補
-                if (dreamReferral.industry && 
-                    complementaryIndustries.some(comp => dreamReferral.industry.includes(comp))) {
+                if (dreamReferralIndustry && 
+                    complementaryIndustries.some(comp => dreamReferralIndustry.includes(comp))) {
                     score += 25;
                 }
                 
@@ -359,20 +381,23 @@ function generateFallbackRecommendations(dreamReferral, wishIndustries, userName
             }
         }
         
+        // 從夢幻引薦中提取行業信息
+        const dreamReferralIndustry = extractIndustryFromText(dreamReferral.peopleIndustry);
+        
         // 檢查是否匹配夢幻引薦行業
-        if (dreamReferral.industry && 
-            (memberIndustry.includes(dreamReferral.industry) || 
-             dreamReferral.industry.includes(memberIndustry))) {
-            return `專業與您的夢幻引薦行業 ${dreamReferral.industry} 高度相關，一對一會談可以讓您了解如何更有效地接觸和服務這類客戶，並獲得實質性引薦機會。`;
+        if (dreamReferralIndustry && 
+            (memberIndustry.includes(dreamReferralIndustry) || 
+             dreamReferralIndustry.includes(memberIndustry))) {
+            return `專業與您的夢幻引薦行業相關，一對一會談可以讓您了解如何更有效地接觸和服務這類客戶，並獲得實質性引薦機會。`;
         }
         
         // 檢查是否有行業互補性
         for (const [industry, complementaryIndustries] of Object.entries(industryMatchScores.pairs)) {
             if (memberIndustry.includes(industry)) {
                 // 檢查用戶的夢幻引薦或願合作行業是否與此會員行業互補
-                if (dreamReferral.industry && 
-                    complementaryIndustries.some(comp => dreamReferral.industry.includes(comp))) {
-                    return `雖然行業不同，但${memberIndustry}專業與您的夢幻引薦行業 ${dreamReferral.industry} 有很強的互補性，可以共享客戶資源並建立互惠的業務關係。`;
+                if (dreamReferralIndustry && 
+                    complementaryIndustries.some(comp => dreamReferralIndustry.includes(comp))) {
+                    return `雖然行業不同，但${memberIndustry}專業與您的夢幻引薦行業有很強的互補性，可以共享客戶資源並建立互惠的業務關係。`;
                 }
                 
                 for (const wishIndustry of wishIndustries) {
