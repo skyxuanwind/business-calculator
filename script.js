@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const REFERRALS_PER_MEETING = 1.5; // 每次一对一産生引薦單數
     const WEEKS_PER_YEAR = 50; // 每年的工作周數
     
+    // 定義後台 API 端點
+    const BACKEND_API_URL = 'YOUR_GOOGLE_APPS_SCRIPT_DEPLOYED_URL';
+    
     // 添加下載按鈕
     const downloadContainer = document.createElement('div');
     downloadContainer.className = 'download-buttons';
@@ -56,25 +59,70 @@ document.addEventListener('DOMContentLoaded', function() {
     // 建立會員數據庫表格
     let memberDataTable = [];
     
-    // 保存會員數據到表格數據庫
-    function saveToDataTable(data) {
+    // 保存會員數據到表格數據庫並發送到後台
+    async function saveToDataTable(memberData) {
         // 檢查是否已有此會員資料
-        const existingIndex = memberDataTable.findIndex(item => item.name === data.name);
+        const existingIndex = memberDataTable.findIndex(item => item.name === memberData.name);
         
         if (existingIndex !== -1) {
             // 更新現有會員資料
-            memberDataTable[existingIndex] = data;
+            memberDataTable[existingIndex] = memberData;
         } else {
             // 添加新會員資料
-            memberDataTable.push(data);
+            memberDataTable.push(memberData);
         }
         
         // 保存到本地存儲
         localStorage.setItem('memberDataTable', JSON.stringify(memberDataTable));
         
-        // 將保存的數據輸出到控制台（僅供開發查看）
-        console.log('已保存會員數據:', data);
-        console.log('當前數據庫內容:', memberDataTable);
+        // 發送數據到後台
+        try {
+            await sendDataToBackend(memberData);
+            console.log(`會員數據 "${memberData.name}" 已保存到後台`);
+        } catch (error) {
+            console.error('發送數據到後台時出錯:', error);
+        }
+    }
+    
+    // 將數據發送到後台API
+    async function sendDataToBackend(memberData) {
+        try {
+            console.log('發送數據到後台:', memberData);
+            
+            // 創建 FormData
+            const formData = new FormData();
+            formData.append('action', 'save_member_data');
+            formData.append('member_data', JSON.stringify(memberData));
+            
+            // 發送請求
+            const response = await fetch(BACKEND_API_URL, {
+                method: 'POST',
+                body: formData
+            });
+            
+            // 檢查響應
+            if (!response.ok) {
+                throw new Error(`後台響應錯誤: ${response.status} ${response.statusText}`);
+            }
+            
+            // 解析 JSON 響應
+            const result = await response.json();
+            console.log('後台響應:', result);
+            
+            // 檢查後台處理是否成功
+            if (!result.success) {
+                throw new Error(`後台處理失敗: ${result.error || '未知錯誤'}`);
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('數據提交錯誤:', error);
+            // 返回錯誤信息，但不阻止應用繼續運行
+            return {
+                success: false,
+                error: error.message
+            };
+        }
     }
     
     // 初始化時從本地存儲載入會員數據表
@@ -132,28 +180,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 獲取並顯示推薦夥伴
-    async function loadPartnerRecommendations(userName, userIndustry) {
+    async function loadPartnerRecommendations(dreamReferral, wishIndustries) {
+        const recommendationsContainer = document.getElementById('partner-recommendations');
+        
+        // 顯示加載中
+        recommendationsContainer.innerHTML = '<p>正在分析您的需求，尋找合適的合作夥伴...</p>';
+        
         try {
-            // 顯示加載動畫
-            partnersLoading.classList.remove('hidden');
-            partnersContainer.classList.add('hidden');
+            // 過濾掉空值的願合作行業
+            const filteredWishIndustries = wishIndustries.filter(industry => industry && industry.trim() !== '');
             
             // 獲取推薦
-            const recommendations = await getPartnerRecommendations(userName, userIndustry);
+            const recommendations = await getPartnerRecommendations(dreamReferral, filteredWishIndustries);
             
-            // 渲染推薦
-            renderPartners(recommendations);
+            // 顯示推薦
+            if (recommendations && recommendations.length > 0) {
+                let html = '<h3>為您推薦的合作夥伴：</h3><ul class="recommendations-list">';
+                
+                recommendations.forEach(recommendation => {
+                    html += `
+                        <li class="recommendation-item">
+                            <h4>${recommendation.name} (${recommendation.industry})</h4>
+                            <p>${recommendation.reason}</p>
+                        </li>
+                    `;
+                });
+                
+                html += '</ul>';
+                recommendationsContainer.innerHTML = html;
+            } else {
+                recommendationsContainer.innerHTML = '<p>無法找到匹配的合作夥伴推薦。請嘗試調整您的需求。</p>';
+            }
         } catch (error) {
-            console.error('載入推薦夥伴時出錯:', error);
-            partnersLoading.classList.add('hidden');
-            
-            // 顯示錯誤信息
-            partnersContainer.innerHTML = `
-                <div class="error-message">
-                    <p>無法載入推薦夥伴。請稍後再試。</p>
-                </div>
-            `;
-            partnersContainer.classList.remove('hidden');
+            console.error('加載合作夥伴推薦時出錯:', error);
+            recommendationsContainer.innerHTML = '<p>無法獲取合作夥伴推薦。請稍後再試。</p>';
         }
     }
     
@@ -231,11 +291,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const wishIndustriesDiv = document.getElementById('result-wishIndustries');
         wishIndustriesDiv.innerHTML = '';
         
-        if (wishIndustry1 || wishIndustry2 || wishIndustry3 || wishIndustry4) {
-            if (wishIndustry1) wishIndustriesDiv.innerHTML += `<p>1. ${wishIndustry1}</p>`;
-            if (wishIndustry2) wishIndustriesDiv.innerHTML += `<p>2. ${wishIndustry2}</p>`;
-            if (wishIndustry3) wishIndustriesDiv.innerHTML += `<p>3. ${wishIndustry3}</p>`;
-            if (wishIndustry4) wishIndustriesDiv.innerHTML += `<p>4. ${wishIndustry4}</p>`;
+        const wishIndustries = [wishIndustry1, wishIndustry2, wishIndustry3, wishIndustry4].filter(item => item);
+        
+        if (wishIndustries.length > 0) {
+            wishIndustries.forEach((industry, index) => {
+                if (industry) wishIndustriesDiv.innerHTML += `<p>${index + 1}. ${industry}</p>`;
+            });
         } else {
             wishIndustriesDiv.textContent = '未填寫';
         }
@@ -264,12 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 industry: dreamReferralIndustry,
                 amount: dreamReferralAmount
             },
-            wishIndustries: [
-                wishIndustry1,
-                wishIndustry2,
-                wishIndustry3,
-                wishIndustry4
-            ].filter(item => item), // 過濾空值
+            wishIndustries: wishIndustries,
             expectedMembers: expectedMembers,
             commitment: {
                 guestInvites: guestInvites,
@@ -282,13 +338,20 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         // 保存數據到表格數據庫
-        saveToDataTable(memberData);
+        await saveToDataTable(memberData);
         
         // 顯示結果容器
         resultsContainer.classList.remove('hidden');
         
         // 獲取推薦夥伴
-        await loadPartnerRecommendations(name, industry);
+        await loadPartnerRecommendations(
+            {
+                people: dreamReferralPeople,
+                industry: dreamReferralIndustry,
+                amount: dreamReferralAmount
+            }, 
+            wishIndustries
+        );
         
         // 滾動到結果區域
         resultsContainer.scrollIntoView({ behavior: 'smooth' });
@@ -480,95 +543,4 @@ document.addEventListener('DOMContentLoaded', function() {
     // 添加下載按鈕事件監聽器
     downloadImageBtn.addEventListener('click', downloadAsImage);
     downloadPdfBtn.addEventListener('click', downloadAsPdf);
-    
-    // 添加導出資料庫功能按鈕
-    const exportDbBtn = document.createElement('button');
-    exportDbBtn.id = 'exportDbBtn';
-    exportDbBtn.className = 'export-db-btn';
-    exportDbBtn.textContent = '導出會員資料庫';
-    exportDbBtn.addEventListener('click', exportDatabase);
-    
-    // 插入到重置按鈕之前
-    resultsContainer.insertBefore(exportDbBtn, resetBtn);
-    
-    // 導出資料庫為CSV格式
-    function exportDatabase() {
-        if (memberDataTable.length === 0) {
-            alert('目前沒有資料可導出');
-            return;
-        }
-        
-        try {
-            // 建立CSV標題行
-            let csvContent = "資料時間,姓名,專業別,年營業額,BNI年營業額,每筆交易金額,成交率,必須完成案件數,需報價案件數,每年會議次數,每週會議次數,夢幻引薦人脈,夢幻引薦行業,夢幻引薦金額,願合作行業1,願合作行業2,願合作行業3,願合作行業4,期望會員數,邀請來賓數,提供引薦數,一對一次數,培訓場次,期許與建議\n";
-            
-            // 添加資料行
-            memberDataTable.forEach(member => {
-                const row = [
-                    new Date(member.timestamp).toLocaleString(),
-                    member.name,
-                    member.industry,
-                    member.yearlyRevenue,
-                    member.bniForecast,
-                    member.avgTransactionAmount,
-                    member.closingRate,
-                    member.casesNeeded,
-                    member.contactsNeeded,
-                    member.yearlyMeetings,
-                    member.weeklyMeetings,
-                    member.dreamReferral.people || '',
-                    member.dreamReferral.industry || '',
-                    member.dreamReferral.amount || '',
-                    member.wishIndustries[0] || '',
-                    member.wishIndustries[1] || '',
-                    member.wishIndustries[2] || '',
-                    member.wishIndustries[3] || '',
-                    member.expectedMembers || '',
-                    member.commitment.guestInvites || '',
-                    member.commitment.referralsProvided || '',
-                    member.commitment.oneOnOneMeetings || '',
-                    member.commitment.trainingAttendance || '',
-                    (member.suggestions || '').replace(/\n/g, ' ') // 移除換行符以避免CSV格式問題
-                ];
-                
-                // 處理CSV中的逗號和引號
-                const processedRow = row.map(field => {
-                    // 將所有字段轉為字符串
-                    const str = String(field);
-                    
-                    // 如果字段包含逗號、引號或換行符，則用引號將其包裹
-                    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                        // 將引號轉義為兩個引號
-                        return `"${str.replace(/"/g, '""')}"`;
-                    }
-                    return str;
-                });
-                
-                csvContent += processedRow.join(',') + '\n';
-            });
-            
-            // 創建Blob對象和臨時下載鏈接
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            
-            // 設置下載文件名
-            link.setAttribute('href', url);
-            link.setAttribute('download', `BNI富揚分會數據_${new Date().toLocaleDateString()}.csv`);
-            link.style.display = 'none';
-            
-            // 添加到頁面並觸發點擊
-            document.body.appendChild(link);
-            link.click();
-            
-            // 清理
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            
-            alert('資料庫導出成功！');
-        } catch (error) {
-            console.error('導出資料庫時出錯:', error);
-            alert('導出資料時出錯，請稍後再試');
-        }
-    }
 }); 
