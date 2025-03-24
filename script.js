@@ -203,6 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const name = recommendation.name || '未知名稱';
                     const industry = recommendation.industry || '未知行業';
                     const reason = recommendation.reason || '無推薦理由';
+                    const potentialClients = recommendation.potentialClients || '尚無資料，建議一對一深入討論';
                     
                     html += `
                         <div class="partner-card">
@@ -212,8 +213,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                             <div class="partner-content">
                                 <div class="partner-section">
-                                    <h4>推薦原因</h4>
+                                    <h4>為什麼安排一對一</h4>
                                     <p class="partner-reason">${reason}</p>
+                                </div>
+                                <div class="partner-section">
+                                    <h4>可能擁有的客戶名單</h4>
+                                    <p class="partner-clients">${potentialClients}</p>
                                 </div>
                             </div>
                         </div>
@@ -223,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 partnersContainer.innerHTML = html;
             } else {
                 // 如果沒有有效推薦，使用默認信息
-                partnersContainer.innerHTML = '<p>無法找到匹配的合作夥伴推薦。請嘗試調整您的需求或稍後再試。</p>';
+                partnersContainer.innerHTML = '<p>無法找到適合一對一的夥伴推薦。請嘗試調整您的需求或稍後再試。</p>';
             }
             
             // 隱藏加載動畫，顯示結果
@@ -232,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('加載合作夥伴推薦時出錯:', error);
             partnersLoading.classList.add('hidden');
-            partnersContainer.innerHTML = '<p>無法獲取合作夥伴推薦。請稍後再試。</p>';
+            partnersContainer.innerHTML = '<p>無法獲取夥伴推薦。請稍後再試。</p>';
             partnersContainer.classList.remove('hidden');
         }
     }
