@@ -65,6 +65,59 @@
                 <p>11. 每週需要進行的一對一會議次數（由系統自動計算：第10項數字除以50週）</p>
             </div>
             
+            <div class="section-divider">
+                <h3>個人期望與承諾</h3>
+            </div>
+            
+            <div class="form-group">
+                <label for="dreamReferral">12. 我的夢幻引薦</label>
+                <input type="text" id="dreamReferralPeople" name="dreamReferralPeople" placeholder="人脈" class="short-input">
+                <input type="text" id="dreamReferralIndustry" name="dreamReferralIndustry" placeholder="行業別" class="short-input">
+                <input type="number" id="dreamReferralAmount" name="dreamReferralAmount" placeholder="金額(NT$)" class="short-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="wishIndustry1">13. 我最想要合作的4個行業別或公司</label>
+                <input type="text" id="wishIndustry1" name="wishIndustry1" placeholder="行業別/公司 1" class="medium-input">
+                <input type="text" id="wishIndustry2" name="wishIndustry2" placeholder="行業別/公司 2" class="medium-input">
+                <input type="text" id="wishIndustry3" name="wishIndustry3" placeholder="行業別/公司 3" class="medium-input">
+                <input type="text" id="wishIndustry4" name="wishIndustry4" placeholder="行業別/公司 4" class="medium-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="expectedMembers">14. 對於分會的期待 - 會員人數達幾人</label>
+                <input type="number" id="expectedMembers" name="expectedMembers">
+            </div>
+            
+            <div class="section-divider">
+                <h3>我對分會的承諾</h3>
+            </div>
+            
+            <div class="form-group">
+                <label for="guestInvites">15. 為分會邀請來賓數 (人/月)</label>
+                <input type="number" id="guestInvites" name="guestInvites">
+            </div>
+            
+            <div class="form-group">
+                <label for="referralsProvided">16. 提供引薦單數 (單/週)</label>
+                <input type="number" id="referralsProvided" name="referralsProvided">
+            </div>
+            
+            <div class="form-group">
+                <label for="oneOnOneMeetings">17. 會員一對一 (次/週)</label>
+                <input type="number" id="oneOnOneMeetings" name="oneOnOneMeetings">
+            </div>
+            
+            <div class="form-group">
+                <label for="trainingAttendance">18. 參加培訓場次</label>
+                <input type="number" id="trainingAttendance" name="trainingAttendance">
+            </div>
+            
+            <div class="form-group">
+                <label for="suggestions">19. 我對分會的期許或建議</label>
+                <textarea id="suggestions" name="suggestions" rows="4"></textarea>
+            </div>
+            
             <button type="submit" class="calculate-btn">計算結果</button>
         </form>
         
@@ -123,6 +176,51 @@
             <div class="result-item">
                 <span class="result-label">11. 每週需要進行的一對一會議次數:</span>
                 <span id="result-weeklyMeetings" class="result-value"></span>
+            </div>
+            
+            <!-- 個人期望與承諾 -->
+            <div class="result-section">
+                <h3>個人期望與承諾</h3>
+                
+                <div class="result-item">
+                    <span class="result-label">12. 我的夢幻引薦:</span>
+                    <span id="result-dreamReferral" class="result-value"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">13. 我最想要合作的行業別/公司:</span>
+                    <div id="result-wishIndustries" class="result-value wish-industries"></div>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">14. 對於分會的期待 - 會員人數:</span>
+                    <span id="result-expectedMembers" class="result-value"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">15. 為分會邀請來賓數:</span>
+                    <span id="result-guestInvites" class="result-value"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">16. 提供引薦單數:</span>
+                    <span id="result-referralsProvided" class="result-value"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">17. 會員一對一:</span>
+                    <span id="result-oneOnOneMeetings" class="result-value"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">18. 參加培訓場次:</span>
+                    <span id="result-trainingAttendance" class="result-value"></span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">19. 我對分會的期許或建議:</span>
+                    <span id="result-suggestions" class="result-value"></span>
+                </div>
             </div>
             
             <!-- 推薦夥伴區域 -->
